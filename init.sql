@@ -32,7 +32,8 @@ CREATE TABLE IF NOT EXISTS artists (
 CREATE TABLE IF NOT EXISTS users (
     id INTEGER PRIMARY KEY AUTO_INCREMENT,
     display_name VARCHAR(256) NOT NULL,
-    permissions INTEGER NOT NULL
+    permissions INTEGER NOT NULL,
+    CONSTRAINT unique_name UNIQUE (display_name)
 );
 
 -- Internal links

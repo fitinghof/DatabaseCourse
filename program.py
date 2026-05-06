@@ -80,6 +80,27 @@ def get_animes():
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 400
 
+@app.route("/api/add/user", methods=["POST"])
+def add_user():
+    try:
+        data = request.get_json()
+        username = data.get("username")
+        perms = data.get("permissions")
+        permsInt = 0
+
+        if "admin" in perms:
+            permsInt |= 1
+        if "bind_anime_song" in perms:
+            permsInt |= 2
+        if "bind_song_artist" in perms:
+            permsInt |= 4
+    
+        results = connector.insert_user(username, permsInt)
+        return jsonify({"success": True, "results": results})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 400
+    
+
 
 @app.route("/api/songs", methods=["GET"])
 def get_songs():

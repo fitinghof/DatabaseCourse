@@ -170,6 +170,22 @@ class DatabaseConnector:
                     (name,),
                 )
 
+    def insert_user(self, username, permissions):
+        with self.connection.cursor() as cursor:
+            cursor.execute(
+                "INSERT INTO users (display_name, permissions) VALUES (%s, %s)",
+                (username, permissions),
+            )
+
+    def get_user(self, username):
+        with self.connection.cursor() as cursor:
+            cursor.execute(
+                "SELECT * FROM users WHERE username = %s",
+                (username,),
+            )
+
+
+
     def bind_artist_song(
         self, song: int, artist: int, confirmed, artist_role: ArtistRole
     ):

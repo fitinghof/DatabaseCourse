@@ -122,6 +122,7 @@
         </header>
 
         <nav>
+            <button class="navButton" onclick="switchTab('login')">Login</button>
             <button class="navButton" onclick="switchTab('search')">Search</button>
             <button class="navButton" onclick="switchTab('add')">Add</button>
             <button class="navButton" onclick="switchTab('bind')">Bind</button>
@@ -143,14 +144,29 @@
                 <div class="tableContainer" id="searchTable"></div>
 
             </div>
+            <!-- Login Tab -->
+            <div id="loginTab" class="inactive">
 
-            <!-- ADD TAB -->
+            </div>
+            <!-- Add Tab -->
             <div id="addTab" class="inactive">
                 <h2>Add New Data</h2>
                 <div class="formSection">
                     <label for="userId">User ID</label>
                     <input type="number" id="userId">
                 </div>
+                <h3>Add User</h3>
+                <form>
+                    <div class="formSection">
+                        <label for="songName">User Name</label>
+                        <input type="text" id="userName">
+                    </div>
+                    <div class="formSection">
+                        <label for="songId">Comma seperated permissions list</label>
+                        <input type="text" id="permissions">
+                    </div>
+                    <button type="button" value="Submit" onclick="addUser()">Submit</button>
+                </form>
                 <!-- Add Song -->
                 <h3>Add Song</h2>
                     <form>
@@ -291,24 +307,35 @@
             const searchTab = document.getElementById("searchTab");
             const addTab = document.getElementById("addTab");
             const bindTab = document.getElementById("bindTab");
+            const loginTab = document.getElementById("loginTab");
             console.log(tabName);
             switch (tabName) {
                 case "search": {
                     searchTab.className = "active";
                     addTab.className = "inactive"
                     bindTab.className = "inactive";
+                    loginTab.className = "inactive";
                     break;
                 }
                 case "add": {
                     searchTab.className = "inactive";
                     addTab.className = "active";
                     bindTab.className = "inactive";
+                    loginTab.className = "inactive";
                     break;
                 }
                 case "bind": {
                     searchTab.className = "inactive";
                     addTab.className = "inactive";
                     bindTab.className = "active";
+                    loginTab.className = "inactive";
+                    break;
+                }
+                case "login": {
+                    searchTab.className = "inactive";
+                    addTab.className = "inactive";
+                    bindTab.className = "inactive";
+                    loginTab.className = "active";
                     break;
                 }
 
@@ -473,6 +500,17 @@
         }
 
         // ==================== ADD FUNCTIONS ====================
+        async function addUser(event) {
+            const data = {
+                username: document.getElementById("userName").value,
+                permissions: document.getElementById("permissions").value.split(",").map(v => v.trim()),
+            };
+
+            apiCall("/api/add/user", data).then(result => {
+                console.log(result);
+            });
+        }
+
         async function addSong(event) {
             const data = {
                 name: document.getElementById("songName").value,
