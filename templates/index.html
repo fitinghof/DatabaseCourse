@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Anime Song Database</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+            padding: 8px;
+        }
+
+        h2 {
+            text-align: center;
+        }
+
+        .active {
+            display: flex;
+            flex-direction: column;
+            visibility: visible;
+            width: 100%;
+            justify-items: center;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .inactive {
+            position: absolute;
+            visibility: hidden;
+        }
+
+        table,
+        th,
+        td {
+            border: 1px solid;
+            border-collapse: collapse;
+            padding: 4px;
+        }
+
+        form {
+            justify-content: center;
+            flex-direction: column;
+            display: flex;
+            text-align: center;
+            width: 320px;
+        }
+
+        .centered {
+            text-align: center;
+        }
+
+        .tableContainer {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .tab {
+            display: flex;
+        }
+
+        nav {
+            display: flex;
+            flex-direction: row;
+            justify-content: center;
+            padding: 4px;
+            gap: 8px;
+        }
+
+        .navButton {
+            width: 80px;
+        }
+
+        header {
+            justify-content: center;
+            text-align: center;
+            padding-bottom: 20px;
+        }
+
+        .formSection {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+            gap: 4px
+        }
+
+        .searchButtons {
+            display: flex;
+            flex-direction: row;
+            gap: 4px;
+            justify-content: center;
+            padding: 2px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <h1>🎵 Anime Song Database</h1>
+            <p>Search, add, and manage anime songs and artists</p>
+        </header>
+
+        <nav>
+            <button class="navButton" onclick="switchTab('search')">Search</button>
+            <button class="navButton" onclick="switchTab('add')">Add</button>
+            <button class="navButton" onclick="switchTab('bind')">Bind</button>
+        </nav>
+
+        <div class="tableContainer">
+            <!-- SEARCH TAB -->
+            <div id="searchTab" class="active">
+                <h2>Search Database</h2>
+                <!-- Search Anisongs -->
+                <input class="centered" type="text" id="query"><br>
+                <div class="searchButtons">
+                    <button type="button" value="Submit" onclick="searchAnisongs()">Search Anisongs</button>
+                    <button type="button" value="Submit" onclick="searchAnimes()">Search Anime</button>
+                    <button type="button" value="Submit" onclick="searchArtists()">Search Artists</button>
+                    <button type="button" value="Submit" onclick="searchSongs()">Search Songs</button>
+                </div>
+
+                <div class="tableContainer" id="searchTable"></div>
+
+            </div>
+
+            <!-- ADD TAB -->
+            <div id="addTab" class="inactive">
+                <h2>Add New Data</h2>
+                <div class="formSection">
+                    <label for="userId">User ID</label>
+                    <input type="number" id="userId">
+                </div>
+                <!-- Add Song -->
+                <h3>Add Song</h2>
+                    <form>
+                        <div class="formSection">
+                            <label for="songName">Song Name</label>
+                            <input type="text" id="songName">
+                        </div>
+                        <div class="formSection">
+                            <label for="songId">Song ID</label>
+                            <input type="number" id="songId">
+                        </div>
+                        <button type="button" value="Submit" onclick="addSong()">Submit</button>
+                    </form>
+
+
+                    <!-- Add Anime -->
+                    <h3>Add Anime</h2>
+                        <form>
+                            <div class="formSection">
+                                <label for="animeNameENG">English Name</label>
+                                <input type="text" id="animeNameENG">
+                            </div>
+                            <div class="formSection">
+                                <label for="animeNameJPN">Japanese Name</label>
+                                <input type="text" id="animeNameJPN">
+                            </div>
+                            <div class="formSection">
+                                <label for="animeNameJPNRomaji">Romaji Japanese</label>
+                                <input type="text" id="animeNameJPNRomaji">
+                            </div>
+                            <div class="formSection">
+                                <label for="anilistId">Anilist ID</label>
+                                <input type="number" id="anilistId">
+                            </div>
+                            <button type="button" value="Submit" onclick="addAnime()">Submit</button>
+                        </form>
+
+
+                        <!-- Add Artist -->
+                        <h3>Add Artist</h3>
+                        <form>
+                            <div class="formSection">
+                                <label for="artistName">Artist Name</label>
+                                <input type="text" id="artistName">
+                            </div>
+                            <button type="button" value="Submit" onclick="addArtist()">Submit</button>
+                        </form>
+
+            </div>
+
+            <!-- BIND TAB -->
+            <div id="bindTab" class="inactive">
+                <h2>Create Relationships</h2>
+
+                <div class="formSection">
+                    <label for="userId">User ID</label>
+                    <input type="number" id="userId">
+                </div>
+                <!-- Bind Anime-Song -->
+                <h3>Bind Anime to Song</h3>
+                <form>
+                    <div class="formSection">
+                        <label for="artistName">Anime ID</label>
+                        <input type="number" id="animeIdBind">
+                    </div>
+
+                    <div class="formSection">
+                        <label for="songIdBind">Song ID</label>
+                        <input type="number" id="songIdBind">
+                    </div>
+
+                    <!-- <div class="formSection">
+                        <label for="animeSongConfirmed">Confirmed</label>
+                        <input type="checkbox" id="animeSongConfirmed" value="Confirmed">
+                    </div> -->
+
+                    <div class="formSection">
+
+                        <label for="rebroadcast">Rebroadcast</label>
+                        <input type="checkbox" id="rebroadcast" value="rebroadcast">
+                    </div>
+
+
+                    <div class="formSection">
+                        <label for="indexType">Index Type</label>
+                        <select id="indexType" name="indexType">
+                            <option value="opening">Opening</option>
+                            <option value="insert">Insert</option>
+                            <option value="ending">Ending</option>
+                        </select>
+                    </div>
+
+                    <div class="formSection">
+                        <label for="index">Index</label>
+                        <input type="number" id="index">
+                    </div>
+
+                    <button type="button" value="Submit" onclick="bindAnimeSong()">Submit</button>
+                </form>
+
+                <!-- Bind Artist-Song -->
+                <h3>Bind Artist to Song</h3>
+                <form>
+                    <div class="formSection">
+                        <label for="artistId">Artist</label>
+                        <input type="number" id="artistId">
+
+                    </div>
+                    <div class="formSection">
+                        <label for="songId2">Song</label>
+                        <input type="number" id="songId2">
+                    </div>
+
+                    <!-- <div class="formSection">
+                        <label for="songArtistConfirmed">Confirmed</label>
+                        <input type="checkbox" id="songArtistConfirmed">
+                    </div> -->
+
+                    <div class="formSection">
+                        <label for="role">Role</label>
+                        <select id="role" name="role">
+                            <option value="artist">Artist</option>
+                            <option value="composer">Composer</option>
+                            <option value="arranger">Arranger</option>
+                        </select>
+                    </div>
+
+                    <button type="button" value="Submit" onclick="bindArtistSong()">Submit</button>
+
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ==================== TAB NAVIGATION ====================
+        function switchTab(tabName) {
+            const searchTab = document.getElementById("searchTab");
+            const addTab = document.getElementById("addTab");
+            const bindTab = document.getElementById("bindTab");
+            console.log(tabName);
+            switch (tabName) {
+                case "search": {
+                    searchTab.className = "active";
+                    addTab.className = "inactive"
+                    bindTab.className = "inactive";
+                    break;
+                }
+                case "add": {
+                    searchTab.className = "inactive";
+                    addTab.className = "active";
+                    bindTab.className = "inactive";
+                    break;
+                }
+                case "bind": {
+                    searchTab.className = "inactive";
+                    addTab.className = "inactive";
+                    bindTab.className = "active";
+                    break;
+                }
+
+            }
+        }
+
+        // ==================== API HELPER ====================
+        async function apiCall(endpoint, data, method = 'POST') {
+            try {
+                const response = await fetch(endpoint, {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data)
+                });
+                return await response.json();
+            } catch (error) {
+                console.error('API Error:', error);
+                return { success: false, error: 'Network error' };
+            }
+        }
+
+        function nullIfEmpty(value) {
+            return value ? value : null;
+        }
+
+        // ==================== SEARCH FUNCTIONS ====================
+        async function searchAnisongs() {
+            const data = { search: document.getElementById("query").value }
+
+            if (data.search === "") {
+                console.log("Invalid Query, please provide a search string");
+                return;
+            }
+
+            apiCall("/api/search/anisong", data).then(result => {
+                console.log(result);
+                displayAnisongResults(result.results);
+            });
+        }
+
+        async function searchSongs() {
+
+            const data = { search: document.getElementById("query").value }
+
+            if (data.search === "") {
+                console.log("Invalid Query, please provide a search string");
+                return;
+            }
+
+            apiCall("/api/search/songs", data).then(result => {
+                console.log(result);
+                displaySongsResults(result.results);
+            });
+        }
+
+        async function searchArtists() {
+            const data = { search: document.getElementById("query").value }
+
+            if (data.search === "") {
+                console.log("Invalid Query, please provide a search string");
+                return;
+            }
+
+            apiCall("/api/search/artists", data).then(result => {
+                console.log(result);
+                displayArtistsResults(result.results);
+            });
+        }
+
+        async function searchAnimes() {
+            const data = { search: document.getElementById("query").value }
+
+            if (data.search === "") {
+                console.log("Invalid Query, please provide a search string");
+                return;
+            }
+
+            apiCall("/api/search/animes", data).then(result => {
+                console.log(result);
+                displayAnimesResults(result.results);
+            });
+        }
+
+        // ==================== DISPLAY RESULTS ====================
+        function displayAnisongResults(results) {
+            const container = document.getElementById('searchTable');
+            if (results.length === 0) {
+                container.innerHTML = '<div>No results found</div>';
+                return;
+            }
+
+            let html = '<table class="table"><thead><tr><th>Anime</th><th>Song</th><th>Type</th><th>Index</th><th>Rebroadcast</th><th>Confirmed</th></tr></thead><tbody>';
+            results.forEach(row => {
+                html += `<tr>
+                    <td>${row.anime_name_eng || 'N/A'}</td>
+                    <td>${row.song_name || 'N/A'}</td>
+                    <td>${row.idx_type || 'N/A'}</td>
+                    <td>${row.idx_value || 'N/A'}</td>
+                    <td>${row.rebroadcast ? 'True' : 'False'}</td>
+                    <td>${row.confirmed_link ? 'True' : 'False'}</td>
+                </tr>`;
+            });
+            html += '</tbody></table>';
+            container.innerHTML = html;
+        }
+
+        function displaySongsResults(results) {
+            const container = document.getElementById('searchTable');
+            if (results.length === 0) {
+                container.innerHTML = '<div>No results found</div>';
+                return;
+            }
+
+            let html = '<table class="table"><thead><tr><th>Song id</th><th>Song</th><th>Artist</th></tr></thead><tbody>';
+            results.forEach(row => {
+                html += `<tr>
+                    <td>${row.id || 'N/A'}</td>
+                    <td>${row.song_name || 'N/A'}</td>
+                    <td>${row.artists.map(a => `"${a.name}" as ${a.role}`).join("<br>")}</td>
+                </tr>`;
+            });
+            html += '</tbody></table>';
+            container.innerHTML = html;
+        }
+
+        function displayArtistsResults(results) {
+            const container = document.getElementById('searchTable');
+            if (results.length === 0) {
+                container.innerHTML = '<div>No results found</div>';
+                return;
+            }
+
+            let html = '<table class="table"><thead><tr><th>ID</th><th>Artist Name</th></tr></thead><tbody>';
+            results.forEach(row => {
+                html += `<tr><td>${row.id}</td><td>${row.artist_name}</td></tr>`;
+            });
+            html += '</tbody></table>';
+            container.innerHTML = html;
+        }
+
+        function displayAnimesResults(results) {
+            const container = document.getElementById('searchTable');
+            if (results.length === 0) {
+                container.innerHTML = '<div>No results found</div>';
+                return;
+            }
+
+            let html = '<table class="table"><thead><tr><th>ID</th><th>English Name</th><th>Romaji</th><th>Japanese</th><th>AniList ID</th></tr></thead><tbody>';
+            results.forEach(row => {
+                html += `<tr>
+                    <td>${row.id}</td>
+                    <td>${row.name_eng || 'N/A'}</td>
+                    <td>${row.name_jpn_romaji || 'N/A'}</td>
+                    <td>${row.name_jpn || 'N/A'}</td>
+                    <td>${row.anilist_id || 'N/A'}</td>
+                </tr>`;
+            });
+            html += '</tbody></table>';
+            container.innerHTML = html;
+        }
+
+        // ==================== ADD FUNCTIONS ====================
+        async function addSong(event) {
+            const data = {
+                name: document.getElementById("songName").value,
+                user: document.getElementById("userId").value,
+            };
+
+            apiCall("/api/add/song", data).then(result => {
+                console.log(result);
+            });
+        }
+
+        async function addAnime(event) {
+            const eng = nullIfEmpty(document.getElementById("animeNameENG").value);
+            const jpn = nullIfEmpty(document.getElementById("animeNameJPN").value);
+            const jpnRomaji = nullIfEmpty(document.getElementById("animeNameJPNRomaji").value);
+            const anilist = nullIfEmpty(document.getElementById("anilistId").value);
+
+            const data = {
+                name_eng: eng,
+                name_jpn: jpn,
+                name_jpn_romaji: jpnRomaji,
+                anilist_id: anilist,
+                user: document.getElementById("userId").value,
+            };
+
+            apiCall("/api/add/anime", data).then(result => {
+                console.log(result);
+            });
+
+        }
+
+        async function addArtist(event) {
+            const data = {
+                name: document.getElementById("artistName").value,
+                user: document.getElementById("userId").value,
+            };
+
+            apiCall("/api/add/artist", data).then(result => {
+                console.log(result);
+            });
+
+        }
+
+        // ==================== BIND FUNCTIONS ====================
+        async function bindAnimeSong(event) {
+            const data = {
+                anime_id: document.getElementById("animeIdBind").value,
+                song_id: document.getElementById("songIdBind").value,
+                // confirmed: document.getElementById("animeSongConfirmed").checked,
+                rebroadcast: document.getElementById("rebroadcast").checked,
+                user: document.getElementById("userId").value,
+                idx_value: document.getElementById("index").value,
+                idx_type: document.getElementById("indexType").value,
+            };
+
+            apiCall("/api/bind/animeSong", data).then(result => {
+                console.log(result);
+            });
+        }
+
+        async function bindArtistSong(event) {
+            const data = {
+                artist_id: document.getElementById("artistId").value,
+                song_id: document.getElementById("songId2").value,
+                user: document.getElementById("userId").value,
+                artist_role: document.getElementById("role").value,
+            };
+
+            apiCall("/api/bind/artistSong", data).then(result => {
+                console.log(result);
+            });
+        }
+    </script>
+</body>
+
+</html>
