@@ -111,6 +111,19 @@
             justify-content: center;
             padding: 2px;
         }
+
+        .popup {
+            position: absolute;
+            display: flex;
+            align-self: center;
+            justify-self: center;
+            flex-direction: column;
+            background: linear-gradient(135deg, #0f237a 0%, #43196d 100%);
+            width: 160px;
+            padding: 8px;
+            gap: 4px;
+            border-radius: 12px;
+        }
     </style>
 </head>
 
@@ -127,6 +140,12 @@
             <button class="navButton" onclick="switchTab('add')">Add</button>
             <button class="navButton" onclick="switchTab('bind')">Bind</button>
         </nav>
+
+        <div id="popup" class="inactive">
+            <h3 id="popupText"></h3>
+            <button onclick="closePopup()">Close</button>
+        </div>
+
 
         <div class="tableContainer">
             <!-- SEARCH TAB -->
@@ -146,14 +165,21 @@
             </div>
             <!-- Login Tab -->
             <div id="loginTab" class="inactive">
+                <form>
+                    <div class="formSection">
+                        <label for="loginUserName">User Name</label>
+                        <input type="text" id="loginUserName">
+                    </div>
+                    <button type="button" value="Submit" onclick="login()">Submit</button>
+                </form>
 
             </div>
             <!-- Add Tab -->
             <div id="addTab" class="inactive">
                 <h2>Add New Data</h2>
                 <div class="formSection">
-                    <label for="userId">User ID</label>
-                    <input type="number" id="userId">
+                    <h3>Current User: </h3>
+                    <h3 id="currentUser">Not Logged in</h3>
                 </div>
                 <h3>Add User</h3>
                 <form>
@@ -163,7 +189,8 @@
                     </div>
                     <div class="formSection">
                         <label for="songId">Comma seperated permissions list</label>
-                        <input type="text" id="permissions">
+                        <input type="text" id="permissions" placeholder="admin, bind_anime_song, bind_artist"
+                            value="admin, bind_anime_song, bind_artist">
                     </div>
                     <button type="button" value="Submit" onclick="addUser()">Submit</button>
                 </form>
@@ -220,12 +247,11 @@
             <!-- BIND TAB -->
             <div id="bindTab" class="inactive">
                 <h2>Create Relationships</h2>
-
-                <div class="formSection">
-                    <label for="userId">User ID</label>
-                    <input type="number" id="userId">
-                </div>
                 <!-- Bind Anime-Song -->
+                <div class="formSection">
+                    <h3>Current User: </h3>
+                    <h3 id="currentUser2">Not Logged in</h3>
+                </div>
                 <h3>Bind Anime to Song</h3>
                 <form>
                     <div class="formSection">
@@ -302,6 +328,8 @@
     </div>
 
     <script>
+        var user = null;
+
         // ==================== TAB NAVIGATION ====================
         function switchTab(tabName) {
             const searchTab = document.getElementById("searchTab");
@@ -342,6 +370,17 @@
             }
         }
 
+        function closePopup() {
+            const popup = document.getElementById("popup");
+            popup.className = "inactive";
+        }
+
+        function openPopup(text) {
+            const popup = document.getElementById("popup");
+            const popupText = document.getElementById("popupText");
+            popup.className = "popup";
+            popupText.innerHTML = text;
+        }
         // ==================== API HELPER ====================
         async function apiCall(endpoint, data, method = 'POST') {
             try {
@@ -355,12 +394,37 @@
                 return await response.json();
             } catch (error) {
                 console.error('API Error:', error);
+                openPopup(`Encountered Error: ${error}`);
                 return { success: false, error: 'Network error' };
             }
         }
 
         function nullIfEmpty(value) {
             return value ? value : null;
+        }
+
+
+        async function login() {
+
+            const data = { username: document.getElementById("loginUserName").value };
+            const currentUser = document.getElementById("currentUser");
+            const currentUser2 = document.getElementById("currentUser2");
+
+            apiCall("/api/login", data).then(result => {
+                console.log(result)
+                if (result.success) {
+                    user = result.results;
+                    console.log(user)
+                    currentUser.innerHTML = user.display_name;
+                    currentUser2.innerHTML = user.display_name;
+                    openPopup("Login Succeded!");
+
+                }
+                else {
+                    openPopup("Login failed!");
+                }
+            }
+            );
         }
 
         // ==================== SEARCH FUNCTIONS ====================
@@ -380,7 +444,9 @@
 
         async function searchSongs() {
 
-            const data = { search: document.getElementById("query").value }
+            const data = { search: document.getElementById("query").value };
+
+            console.log(data);
 
             if (data.search === "") {
                 console.log("Invalid Query, please provide a search string");
@@ -508,17 +574,31 @@
 
             apiCall("/api/add/user", data).then(result => {
                 console.log(result);
+                if (result.success) {
+                    openPopup(`User Added!`);
+
+                } else {
+                    openPopup(`Encountered Error: ${result.error}`);
+                }
+
+
             });
         }
 
         async function addSong(event) {
             const data = {
                 name: document.getElementById("songName").value,
-                user: document.getElementById("userId").value,
+                user: user?.id,
             };
 
             apiCall("/api/add/song", data).then(result => {
                 console.log(result);
+                if (result.success) {
+                    openPopup(`Song Added!`);
+
+                } else {
+                    openPopup(`Encountered Error: ${result.error}`);
+                }
             });
         }
 
@@ -533,11 +613,17 @@
                 name_jpn: jpn,
                 name_jpn_romaji: jpnRomaji,
                 anilist_id: anilist,
-                user: document.getElementById("userId").value,
+                user: user?.id,
             };
 
             apiCall("/api/add/anime", data).then(result => {
                 console.log(result);
+                if (result.success) {
+                    openPopup(`Anime Added!`);
+
+                } else {
+                    openPopup(`Encountered Error: ${result.error}`);
+                }
             });
 
         }
@@ -545,11 +631,17 @@
         async function addArtist(event) {
             const data = {
                 name: document.getElementById("artistName").value,
-                user: document.getElementById("userId").value,
+                user: user?.id,
             };
 
             apiCall("/api/add/artist", data).then(result => {
                 console.log(result);
+                if (result.success) {
+                    openPopup(`Artist Added!`);
+
+                } else {
+                    openPopup(`Encountered Error: ${result.error}`);
+                }
             });
 
         }
@@ -561,13 +653,19 @@
                 song_id: document.getElementById("songIdBind").value,
                 // confirmed: document.getElementById("animeSongConfirmed").checked,
                 rebroadcast: document.getElementById("rebroadcast").checked,
-                user: document.getElementById("userId").value,
+                user: user?.id,
                 idx_value: document.getElementById("index").value,
                 idx_type: document.getElementById("indexType").value,
             };
 
             apiCall("/api/bind/animeSong", data).then(result => {
                 console.log(result);
+                if (result.success) {
+                    openPopup(`Bind Succeded!`);
+
+                } else {
+                    openPopup(`Encountered Error: ${result.error}`);
+                }
             });
         }
 
@@ -575,14 +673,23 @@
             const data = {
                 artist_id: document.getElementById("artistId").value,
                 song_id: document.getElementById("songId2").value,
-                user: document.getElementById("userId").value,
+                user: user?.id,
                 artist_role: document.getElementById("role").value,
             };
 
             apiCall("/api/bind/artistSong", data).then(result => {
                 console.log(result);
+                if (result.success) {
+                    openPopup(`Bind Succeded!`);
+
+                } else {
+                    openPopup(`Encountered Error: ${result.error}`);
+                }
             });
         }
+
+
+
     </script>
 </body>
 

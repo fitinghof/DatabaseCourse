@@ -31,11 +31,15 @@ def insert_songs(mysql: DatabaseConnector, postgres):
     for id, name, artists, composers, arrangers in songs:
         mysql.insert_song(name, id)
         for artist in artists:
-            mysql.bind_artist_song(id, artist, False, ArtistRole("artist"))
+            mysql.bind_artist_song_unchecked(id, artist, False, ArtistRole("artist"))
         for composer in composers:
-            mysql.bind_artist_song(id, composer, False, ArtistRole("composer"))
+            mysql.bind_artist_song_unchecked(
+                id, composer, False, ArtistRole("composer")
+            )
         for arranger in arrangers:
-            mysql.bind_artist_song(id, arranger, False, ArtistRole("arranger"))
+            mysql.bind_artist_song_unchecked(
+                id, arranger, False, ArtistRole("arranger")
+            )
 
     print(f"inserted {len(songs)} songs!")
 

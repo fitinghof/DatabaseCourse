@@ -49,10 +49,11 @@ class DatabaseConnector:
         if self.connection is not None:
             cursor = self.connection.cursor(dictionary=True)
             cursor.execute(
-                "SELECT s.*, jSON_ARRAYAGG(JSON_OBJECT('id', a.id, 'name', a.artist_name, 'role', sa.artist_role)) AS artists "
+                "SELECT s.*, jSON_ARRAYAGG("
+                "JSON_OBJECT('id', a.id, 'name', a.artist_name, 'role', sa.artist_role)) AS artists "
                 "FROM songs s "
-                "INNER JOIN song_artist_links sa ON s.id = sa.song "
-                "INNER JOIN artists a ON sa.artist = a.id "
+                "LEFT JOIN song_artist_links sa ON s.id = sa.song "
+                "LEFT JOIN artists a ON sa.artist = a.id "
                 "WHERE s.song_name LIKE %s "
                 "GROUP BY s.id "
                 "ORDER BY s.song_name ",
@@ -62,6 +63,9 @@ class DatabaseConnector:
             results = cursor.fetchall()
             for line in results:
                 line["artists"] = json.loads(line["artists"])
+                line["artists"] = list(
+                    filter(lambda v: v["id"] != None, line["artists"])
+                )
             cursor.close()
 
             return results
@@ -84,6 +88,7 @@ class DatabaseConnector:
                         "INSERT INTO songs (song_name) VALUES (%s)",
                         (name,),
                     )
+                self.connection.commit()
 
     def insert_anime(
         self,
@@ -105,6 +110,7 @@ class DatabaseConnector:
                         "INSERT INTO animes (name_eng, name_jpn_romaji, name_jpn, anilist_id) VALUES (%s, %s, %s, %s)",
                         (name_eng, name_jpn, name_jpn_romaji, anilist_id),
                     )
+                self.connection.commit()
 
     def bind_anime_song_unchecked(
         self,
@@ -131,6 +137,7 @@ class DatabaseConnector:
                         user,
                     ),
                 )
+                self.connection.commit()
 
     def bind_anime_song(
         self,
@@ -145,7 +152,7 @@ class DatabaseConnector:
         if self.connection is not None:
             with self.connection.cursor() as cursor:
                 cursor.execute(
-                    "CALL bind_anime_song(@%s, @%s, @%s, @%s, @%s, @%s, @%s)",
+                    "CALL bind_anime_song(%s, %s, %s, %s, %s, %s, %s)",
                     (
                         anime,
                         song,
@@ -156,6 +163,7 @@ class DatabaseConnector:
                         rebroadcast,
                     ),
                 )
+                self.connection.commit()
 
     def insert_artist(self, name: str, id: int | None):
         with self.connection.cursor() as cursor:
@@ -169,6 +177,7 @@ class DatabaseConnector:
                     "INSERT INTO artists (artist_name) VALUES (%s)",
                     (name,),
                 )
+            self.connection.commit()
 
     def insert_user(self, username, permissions):
         with self.connection.cursor() as cursor:
@@ -176,17 +185,21 @@ class DatabaseConnector:
                 "INSERT INTO users (display_name, permissions) VALUES (%s, %s)",
                 (username, permissions),
             )
+            self.connection.commit()
 
     def get_user(self, username):
-        with self.connection.cursor() as cursor:
+        with self.connection.cursor(dictionary=True) as cursor:
             cursor.execute(
-                "SELECT * FROM users WHERE username = %s",
+                "SELECT * FROM users WHERE display_name = %s LIMIT 1",
                 (username,),
             )
+            user = cursor.fetchone()
+            if user is None:
+                raise Exception("User not found")
 
+            return user
 
-
-    def bind_artist_song(
+    def bind_artist_song_unchecked(
         self, song: int, artist: int, confirmed, artist_role: ArtistRole
     ):
         if self.connection is not None:
@@ -196,6 +209,18 @@ class DatabaseConnector:
                     "VALUES (%s, %s, %s, %s)",
                     (song, artist, confirmed, artist_role.value),
                 )
+                self.connection.commit()
+
+    def bind_artist_song(
+        self, song: int, artist: int, user: int, confirmed, artist_role: ArtistRole
+    ):
+        if self.connection is not None:
+            with self.connection.cursor() as cursor:
+                cursor.execute(
+                    "CALL bind_artist(%s, %s, %s, %s, %s) ",
+                    (artist, song, user, confirmed, artist_role.value),
+                )
+                self.connection.commit()
 
     def search_artists(self, name: str) -> list:
         if self.connection is not None:

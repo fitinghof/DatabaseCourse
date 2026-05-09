@@ -80,6 +80,7 @@ def get_animes():
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 400
 
+
 @app.route("/api/add/user", methods=["POST"])
 def add_user():
     try:
@@ -88,18 +89,20 @@ def add_user():
         perms = data.get("permissions")
         permsInt = 0
 
+        print(perms)
+
         if "admin" in perms:
             permsInt |= 1
         if "bind_anime_song" in perms:
             permsInt |= 2
-        if "bind_song_artist" in perms:
+        if "bind_artist" in perms:
             permsInt |= 4
-    
+
+        print(permsInt)
         results = connector.insert_user(username, permsInt)
         return jsonify({"success": True, "results": results})
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 400
-    
 
 
 @app.route("/api/songs", methods=["GET"])
@@ -201,11 +204,26 @@ def bind_artist_song():
         if not all([song, artist, artist_role]):
             return jsonify({"success": False, "error": "Missing required fields"}), 400
 
-        connector.bind_artist_song(song, artist, False, ArtistRole(artist_role))
+        connector.bind_artist_song(song, artist, user, False, ArtistRole(artist_role))
         return jsonify(
             {"success": True, "message": "Artist-Song binding added successfully"}
         )
     except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 400
+
+
+@app.route("/api/login", methods=["POST"])
+def login():
+    try:
+        data = request.get_json()
+        username = data.get("username")
+        print(username)
+        user = connector.get_user(username)
+
+        return jsonify({"success": True, "results": user})
+
+    except Exception as e:
+        print(e)
         return jsonify({"success": False, "error": str(e)}), 400
 
 

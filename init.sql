@@ -108,7 +108,7 @@ DELIMITER ##
 CREATE PROCEDURE bind_anime_song (
     IN anime INTEGER,
     IN song INTEGER,
-    IN user_id INTEGER,
+    IN p_user_id INTEGER,
     IN idx_type ENUM('opening', 'insert', 'ending'),
     IN idx_value INTEGER,
     IN confirmed BOOLEAN,
@@ -117,11 +117,35 @@ CREATE PROCEDURE bind_anime_song (
 BEGIN
     DECLARE user_permissions INTEGER DEFAULT 0;
     DECLARE valid BOOLEAN DEFAULT FALSE;
-    SELECT permissions INTO user_permissions FROM users WHERE id = user_id;
+    SELECT permissions INTO user_permissions FROM users WHERE id = p_user_id;
     SELECT has_permission(user_permissions, 'bind_anime_song') INTO valid;
     IF valid THEN 
         INSERT INTO anime_song_links (anime, song, user_bind, idx_type, idx_value, confirmed, rebroadcast) 
-        VALUES (anime, song, user_id, idx_type, idx_value, confirmed, rebroadcast);
+        VALUES (anime, song, p_user_id, idx_type, idx_value, confirmed, rebroadcast);
+    ELSE
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'User was not allowed to execute this query';
+    END IF;
+END ##
+
+DELIMITER ;
+
+
+DELIMITER ##
+CREATE PROCEDURE bind_artist (
+    IN artist INTEGER,
+    IN song INTEGER,
+    IN p_user_id INTEGER,
+    IN confirmed BOOLEAN,
+    IN artist_role ENUM('composer', 'artist', 'arranger')
+    )
+BEGIN
+    DECLARE user_permissions INTEGER DEFAULT 0;
+    DECLARE valid BOOLEAN DEFAULT FALSE;
+    SELECT permissions INTO user_permissions FROM users WHERE id = p_user_id;
+    SELECT has_permission(user_permissions, 'bind_artist') INTO valid;
+    IF valid THEN 
+        INSERT INTO song_artist_links (artist, song, confirmed, artist_role) 
+        VALUES (artist, song, confirmed, artist_role);
     ELSE
         SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'User was not allowed to execute this query';
     END IF;
