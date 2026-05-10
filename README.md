@@ -13,8 +13,8 @@ The program expects to login as root
 
 ## Step 2
 
-Initialize the database by running `docker exec -i mysqldb mysql -uroot -p{database password here} test < dump.sql` (linux, untested)
-for windows do `Get-Content dump.sql -Raw | docker exec -i mysqldb mysql -u root -p{database password here} test`
+Initialize the database by running `docker exec -i mysqldb mysql -uroot -p{database password here} < dump.sql` (linux, untested)
+for windows do `Get-Content dump.sql -Raw | docker exec -i mysqldb mysql -u root -p{database password here}`
 This will populate the database with real data and create the initial structure.
 
 ## Step 3
