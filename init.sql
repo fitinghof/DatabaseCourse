@@ -67,20 +67,6 @@ CREATE TABLE IF NOT EXISTS song_artist_links (
     CONSTRAINT valid UNIQUE (song, artist, artist_role)
 );
 
-
--- external links
-CREATE TABLE IF NOT EXISTS spotify_artist_links (
-    spotify VARCHAR(256) NOT NULL,
-    artist INTEGER NOT NULL,
-    FOREIGN KEY (artist) REFERENCES artists(id)
-);
-
-CREATE TABLE IF NOT EXISTS spotify_song_links (
-    spotify VARCHAR(256) NOT NULL,
-    song INTEGER NOT NULL,
-    FOREIGN KEY (song) REFERENCES songs(id)
-);
-
 -- Views
 CREATE VIEW anisong_view AS 
     SELECT
