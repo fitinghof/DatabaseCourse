@@ -9,12 +9,13 @@ Before starting anything, make sure to remove "example" from `example.env`, typi
 To start the project, first make sure you have docker, then run `docker compose up -d`
 This will make sure a mysql instance with the correct password is created.
 You can also do this without docker but in that case you need to make sure that the password of the MySQL server is written to the .env file.
-The program expects to login as root
+The program expects to login as root and will wipe any existing database named `test`
 
 ## Step 2
 
-Initialize the database by running `docker exec -i mysqldb mysql -uroot -p{database password here} < dump.sql` (linux, untested)
+Initialize the database by running `docker exec -i mysqldb mysql -uroot -p{database password here} < dump.sql` (linux)
 for windows do `Get-Content dump.sql -Raw | docker exec -i mysqldb mysql -u root -p{database password here}`
+If you didn't use docker, you can probably run something like `mysqldb mysql -uroot -p{database password here} < dump.sql` I have not tested this.
 This will populate the database with real data and create the initial structure.
 
 ## Step 3
