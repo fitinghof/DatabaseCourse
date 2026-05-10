@@ -19,6 +19,7 @@ This will populate the database with real data and create the initial structure.
 
 ## Step 3
 
+Run `pip install -r requirements.txt`
 Run `py program.py`
 This will create a website reachable at http://127.0.0.1:5000 for interacting with the database
 
